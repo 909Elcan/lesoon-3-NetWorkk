@@ -11,8 +11,8 @@ namespace ConsoleApp1
 {
     public class User
     {
-        public string remoteendpoint { get; set; } = "";
-        public string username { get; set; } = "";
+        public string remoteendpoint { get; set; } ;
+        public string username { get; set; } ;
         public bool isOnline { get; set; }
     }
 
@@ -33,7 +33,7 @@ namespace ConsoleApp1
 
                 Console.WriteLine($"Server dinləyir: {socket.LocalEndPoint}");
 
-                // users.json faylı yoxdursa avtomatik yaradılır
+             
                 EnsureJsonFileExists();
 
                 while (true)
@@ -50,7 +50,6 @@ namespace ConsoleApp1
 
                         try
                         {
-                            // 1. Client-dən istifadəçi adını gözləyirik
                             int length = await client.ReceiveAsync(bytes, SocketFlags.None);
                             if (length == 0) return;
 
@@ -60,7 +59,7 @@ namespace ConsoleApp1
                             bool canLogin = false;
                             string responseMsg = "";
 
-                            // 2. JSON faylını oxuyub yoxlayırıq
+                            
                             string filePath = "users.json";
                             string jsonString = File.ReadAllText(filePath);
                             var users = JsonSerializer.Deserialize<List<User>>(jsonString) ?? new List<User>();
@@ -86,12 +85,14 @@ namespace ConsoleApp1
                                 Console.WriteLine($"Uğurlu giriş -> Ad: {connectedUser}, IP: {clientEpStr}");
                             }
 
-                            // Cavabı client-ə göndəririk
+                            
                             await client.SendAsync(Encoding.UTF8.GetBytes(responseMsg), SocketFlags.None);
 
-                            if (!canLogin) return;
+                            if (!canLogin){ 
+                                return;
+                            }
 
-                            // 3. Mesajlaşma və Exit dövrü
+                          
                             while (true)
                             {
                                 length = await client.ReceiveAsync(bytes, SocketFlags.None);
@@ -113,7 +114,6 @@ namespace ConsoleApp1
                         }
                         finally
                         {
-                            // 4. Bağlantı qırıldıqda və ya exit olduqda istifadəçini offline edirik
                             if (!string.IsNullOrEmpty(connectedUser))
                             {
                                 try
@@ -128,7 +128,7 @@ namespace ConsoleApp1
                                         if (targetUser != null)
                                         {
                                             targetUser.isOnline = false;
-                                            // Tələbə görə son IP saxlanılır, remoteendpoint təmizlənmir
+                                           
                                         }
 
                                         File.WriteAllText(filePath, JsonSerializer.Serialize(users, new JsonSerializerOptions { WriteIndented = true }));
